@@ -76,3 +76,18 @@ int main()
     
     return 0;
 }
+
+/*
+ * COMPILATION:
+ * gcc LRU.c -o LRU
+ * 
+ * RUN:
+ * ./LRU
+ * 
+ * DESCRIPTION:
+ * Least Recently Used (LRU) page replacement algorithm
+ * Takes user input for number of frames, pages, and reference string
+ * 
+ * FIXES NEEDED:
+ * None - code should work as-is
+ */

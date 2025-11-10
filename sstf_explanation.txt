@@ -1,0 +1,284 @@
+sstf.c - SSTF (Shortest Seek Time First) Disk Scheduling Algorithm
+=====================================================================
+
+LINE-BY-LINE EXPLANATION:
+
+Line 1-3: Header files
+- stdio.h: Standard I/O (printf, scanf)
+- stdlib.h: Standard library (abs function)
+- math.h: Math functions (though abs is actually from stdlib)
+
+Line 4: int main()
+- Program entry point
+
+Line 5: int n, i, j, head, total = 0;
+- n: number of disk requests
+- i, j: loop counters
+- head: current position of disk head (read/write arm)
+- total: total head movement (seek time)
+
+Line 6: int requests[100], visited[100] = {0};
+- requests[]: array of disk sector requests
+- visited[]: tracks which requests have been serviced
+  - 0 = not visited, 1 = visited
+  - Initialized to all zeros
+
+Line 7-8: Get number of requests
+- Prompt user for number of disk requests
+- Store in variable n
+
+Line 9-11: Input disk requests
+- Prompt for disk request positions
+- Loop to read n requests into requests[] array
+
+Line 12-13: Get initial head position
+- Prompt for starting position of disk head
+- Store in 'head' variable
+
+Line 14-15: Display header
+- Print algorithm name
+- Print sequence header showing initial head position
+
+Line 16: int count = 0;
+- Counter for number of requests serviced
+- Loop continues until count reaches n
+
+Line 17: while (count < n)
+- **MAIN SCHEDULING LOOP**
+- Continues until all requests are serviced
+
+Line 18: int min = 9999, index = -1;
+- min: stores minimum seek distance found
+- index: stores array position of closest request
+- Initialize min to large value for comparison
+
+Line 19-20: Comment
+- Explains the inner loop purpose
+
+Line 20-28: Find closest unvisited request
+- Loop through all requests
+
+Line 21: if (!visited[i])
+- Only consider requests not yet serviced
+- !visited[i] means visited[i] == 0
+
+Line 22: int dist = abs(head - requests[i]);
+- Calculate absolute distance from current head position
+- abs() returns absolute value (always positive)
+- Distance = |current_position - requested_position|
+
+Line 23-26: Track minimum distance
+- if (dist < min): Found closer request
+  - Update min to this distance
+  - Update index to this request's position
+
+Line 30: total += min;
+- Add seek distance to total head movement
+- Accumulates total seek time
+
+Line 31: head = requests[index];
+- **Move head to the selected request**
+- Update current head position
+
+Line 32: visited[index] = 1;
+- Mark this request as serviced
+- Prevents selecting it again
+
+Line 33: count++;
+- Increment count of serviced requests
+
+Line 34: printf(" -> %d", head);
+- Display the position in sequence
+- Shows head movement visually
+
+Line 36: printf("\nTotal head movement: %d\n", total);
+- After all requests serviced, display total seek distance
+
+Line 37: return 0;
+- Program terminates successfully
+
+SSTF ALGORITHM EXPLAINED:
+==========================
+
+CONCEPT:
+--------
+SSTF = Shortest Seek Time First
+- Greedy algorithm for disk scheduling
+- Always services the request closest to current head position
+- Minimizes seek time locally (not globally optimal)
+
+DISK STRUCTURE:
+---------------
+- Disk has concentric circular tracks (0 to MAX)
+- Head moves radially to access different tracks
+- Seek time = time to move head to desired track
+- Goal: Minimize total head movement
+
+HOW SSTF WORKS:
+---------------
+1. Start at initial head position
+2. From remaining requests, find the closest one
+3. Move head to that request (service it)
+4. Mark request as completed
+5. Repeat until all requests serviced
+
+DISTANCE CALCULATION:
+---------------------
+Distance = |current_head_position - request_position|
+Example:
+- Head at 50, request at 60 → distance = |50-60| = 10
+- Head at 50, request at 30 → distance = |50-30| = 20
+Choose request at 60 (shorter distance)
+
+EXAMPLE EXECUTION:
+==================
+
+Input:
+Number of requests: 8
+Requests: 98, 183, 37, 122, 14, 124, 65, 67
+Initial head position: 53
+
+Step-by-step:
+
+Initial State:
+head=53, total=0
+requests = [98, 183, 37, 122, 14, 124, 65, 67]
+visited =  [0,  0,   0,  0,   0,  0,   0,  0]
+
+Step 1: Find closest to 53
+Distances: |53-98|=45, |53-183|=130, |53-37|=16, |53-122|=69,
+          |53-14|=39, |53-124|=71, |53-65|=12, |53-67|=14
+Minimum: 65 (distance=12)
+Move: 53 → 65, total=12
+visited[6]=1
+
+Step 2: Find closest to 65
+Distances: 98(33), 183(118), 37(28), 122(57), 14(51), 124(59), 67(2)
+(Skip visited[6]=65)
+Minimum: 67 (distance=2)
+Move: 65 → 67, total=12+2=14
+visited[7]=1
+
+Step 3: Find closest to 67
+Distances: 98(31), 183(116), 37(30), 122(55), 14(53), 124(57)
+Minimum: 37 (distance=30)
+Move: 67 → 37, total=14+30=44
+visited[2]=1
+
+Step 4: Find closest to 37
+Distances: 98(61), 183(146), 122(85), 14(23), 124(87)
+Minimum: 14 (distance=23)
+Move: 37 → 14, total=44+23=67
+visited[4]=1
+
+Step 5: Find closest to 14
+Distances: 98(84), 183(169), 122(108), 124(110)
+Minimum: 98 (distance=84)
+Move: 14 → 98, total=67+84=151
+visited[0]=1
+
+Step 6: Find closest to 98
+Distances: 183(85), 122(24), 124(26)
+Minimum: 122 (distance=24)
+Move: 98 → 122, total=151+24=175
+visited[3]=1
+
+Step 7: Find closest to 122
+Distances: 183(61), 124(2)
+Minimum: 124 (distance=2)
+Move: 122 → 124, total=175+2=177
+visited[5]=1
+
+Step 8: Last request
+Distance: 183(59)
+Move: 124 → 183, total=177+59=236
+visited[1]=1
+
+Output:
+Sequence: 53 -> 65 -> 67 -> 37 -> 14 -> 98 -> 122 -> 124 -> 183
+Total head movement: 236
+
+VISUAL REPRESENTATION:
+======================
+
+Track positions (sorted): 14, 37, 53(start), 65, 67, 98, 122, 124, 183
+
+SSTF path:
+                     start
+                      ↓
+14----37----53----65-67----98----122-124----183
+      ↑      ↓     ↓  ↓     ↑      ↑   ↑      ↑
+      3      1     2  3     4      5   6      7
+
+Order: 53→65→67→37→14→98→122→124→183
+
+Notice: Not monotonic! Goes back and forth (65→67→37)
+
+COMPARISON WITH OTHER ALGORITHMS:
+==================================
+
+Same example with FCFS (First Come First Serve):
+Order: 53→98→183→37→122→14→124→65→67
+Total: 45+85+146+85+108+110+59+2 = 640 movements
+SSTF is much better!
+
+Same example with SCAN:
+Order: 53→37→14→0→65→67→98→122→124→183
+Total: 16+23+14+65+2+31+24+2+59 = 236 movements
+Same as SSTF in this case!
+
+ADVANTAGES OF SSTF:
+===================
+✓ Better performance than FCFS
+✓ Reduces average seek time
+✓ Simple to implement
+✓ Works well for moderate load
+
+DISADVANTAGES OF SSTF:
+======================
+✗ Can cause starvation
+  - Requests far from current position may wait indefinitely
+  - If requests keep arriving near current head position
+  
+✗ Not optimal globally
+  - Greedy choice doesn't guarantee minimum total movement
+  
+✗ Variance in response time
+  - Some requests serviced quickly, others very slowly
+
+STARVATION EXAMPLE:
+===================
+Initial: head=50, requests=[55, 45, 190]
+
+Time 0: Service 55 (distance 5)
+Time 1: Service 45 (distance 10)
+Time 2: New request arrives: 52
+Time 3: Service 52 (distance 7) - 190 still waiting!
+Time 4: New request arrives: 48
+Time 5: Service 48 (distance 4) - 190 still waiting!
+
+Request at 190 keeps getting postponed by closer requests.
+
+REAL-WORLD USE:
+===============
+- Used in some disk scheduling scenarios
+- Better than FCFS but worse than SCAN/C-SCAN for fairness
+- Good for systems with predictable I/O patterns
+- Modern drives often use variations of SSTF with starvation prevention
+
+COMPLEXITY:
+===========
+Time Complexity: O(n²)
+- Outer loop: n iterations (one per request)
+- Inner loop: n iterations (finding minimum)
+- Total: n × n = O(n²)
+
+Space Complexity: O(n)
+- Arrays: requests[n] and visited[n]
+
+POSSIBLE OPTIMIZATIONS:
+=======================
+1. Use priority queue (heap) for O(n log n) complexity
+2. Sort requests first and use binary search
+3. Implement aging to prevent starvation
+4. Combine with SCAN (elevator algorithm) for fairness

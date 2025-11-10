@@ -1,0 +1,99 @@
+FCFS.c - First Come First Serve Page Replacement Algorithm
+============================================================
+
+LINE-BY-LINE EXPLANATION:
+
+Line 1: #include<stdio.h>
+- Includes standard input/output library for printf and scanf functions
+
+Line 2-3: int main()
+- Main function where program execution begins
+
+Line 4: int incomingStream[] = {4, 1, 2, 4, 5};
+- Array containing the sequence of page requests
+- Pages 4, 1, 2, 4, 5 will be requested in this order
+
+Line 5: int pageFaults = 0;
+- Counter to track total number of page faults (when a page is not in memory)
+
+Line 6: int frames = 3;
+- Number of available frames in memory (can hold 3 pages at a time)
+
+Line 7: int m, n, s, pages;
+- Loop variables and helper variables
+- m, n: loop counters
+- s: flag to check if page is already in frame
+- pages: total number of page requests
+
+Line 9: pages = sizeof(incomingStream)/sizeof(incomingStream[0]);
+- Calculates number of pages in the incoming stream
+- sizeof(array)/sizeof(element) gives array length
+
+Line 11: printf("Incoming \t Frame 1 \t Frame 2 \t Frame 3");
+- Prints header for the output table
+
+Line 12: int temp[frames];
+- Creates array to store current pages in frames
+
+Line 13-16: for(m = 0; m < frames; m++) { temp[m] = -1; }
+- Initializes all frames to -1 (indicating empty frames)
+
+Line 18-50: Main processing loop - for(m = 0; m < pages; m++)
+- Processes each page request one by one
+
+Line 20: s = 0;
+- Reset flag for each new page request
+- s will be set to 1 if page is found in frames
+
+Line 22-29: Inner loop checking if page already exists in frames
+- for(n = 0; n < frames; n++)
+- Checks each frame to see if current page is already loaded
+
+Line 24-28: if(incomingStream[m] == temp[n])
+- If page is found in frames:
+  - Increment s (page hit)
+  - Decrement pageFaults (we incremented it optimistically, so undo that)
+
+Line 30: pageFaults++;
+- Assume page fault initially
+- Will be decremented if page is found (lines 27)
+
+Line 32-35: if((pageFaults <= frames) && (s == 0))
+- If frames are not yet full AND page not found:
+- Place page directly in the next available frame position
+
+Line 36-39: else if(s == 0)
+- If frames are full AND page not found:
+- Replace page using FCFS (circular replacement)
+- (pageFaults - 1) % frames gives the position to replace
+
+Line 41-49: Display current state
+- Line 42: Print the current page number
+- Lines 43-48: Print contents of all frames
+  - If frame has a page (not -1), print the page number
+  - If frame is empty (-1), print "-"
+
+Line 52: printf("\nTotal Page Faults:\t%d\n", pageFaults);
+- Display final count of page faults
+
+Line 53: return 0;
+- End program successfully
+
+ALGORITHM SUMMARY:
+==================
+FCFS (First Come First Serve) is the simplest page replacement algorithm:
+1. Pages are loaded into frames in order
+2. When frames are full, the oldest page (first in) is replaced
+3. Uses circular queue concept (modulo operator for wrap-around)
+4. Not optimal - doesn't consider page usage patterns
+
+EXAMPLE OUTPUT:
+===============
+With incoming stream {4, 1, 2, 4, 5} and 3 frames:
+- Load 4 → Frame 1
+- Load 1 → Frame 2  
+- Load 2 → Frame 3
+- Request 4 → Already in Frame 1 (no fault)
+- Load 5 → Replace 4 in Frame 1 (oldest)
+
+Total Page Faults: 4

@@ -1,0 +1,133 @@
+LRU.c - Least Recently Used Page Replacement Algorithm
+=======================================================
+
+LINE-BY-LINE EXPLANATION:
+
+Line 1: #include<stdio.h>
+- Includes standard input/output library
+
+Line 3-14: int findLRU(int time[], int n)
+- Helper function to find the Least Recently Used page
+- Parameters:
+  - time[]: array storing last access time for each frame
+  - n: number of frames
+
+Line 4: int i, minimum = time[0], pos = 0;
+- i: loop counter
+- minimum: stores the smallest time value (oldest access)
+- pos: stores position of LRU page (initially 0)
+
+Line 6-11: Finding LRU page loop
+- Iterates through time array
+- If time[i] < minimum: this page was used longer ago
+- Updates minimum and pos to track oldest page
+
+Line 13: return pos;
+- Returns index of least recently used page
+
+Line 16-17: int main()
+- Main function starts
+
+Line 18: Variable declarations
+- no_of_frames: number of memory frames available
+- no_of_pages: number of page requests
+- frames[10]: array storing current pages in frames
+- pages[30]: array storing page reference string
+- counter: global timestamp counter
+- time[10]: tracks last access time for each frame
+- flag1, flag2: status flags
+- i, j, pos: loop variables and position tracker
+- faults: page fault counter
+
+Line 19-23: User input for frames and pages
+- Prompts user to enter number of frames
+- Prompts user to enter number of pages
+
+Line 25-29: Input reference string
+- Loop to read page numbers from user
+- Stores in pages[] array
+
+Line 31-33: Initialize frames to -1
+- All frames start empty (-1 indicates no page loaded)
+
+Line 35-73: Main processing loop - for each page request
+
+Line 36: flag1 = flag2 = 0;
+- Reset flags for each new page
+- flag1: indicates if page found in memory (hit)
+- flag2: indicates if page was placed in empty frame
+
+Line 38-45: Check if page already in frames
+- Loop through all frames
+- If page found:
+  - Increment counter (current timestamp)
+  - Update time[j] with current counter
+  - Set both flags to 1 (page hit)
+  - Break out of loop
+
+Line 47-58: Handle page not in frames (flag1 == 0)
+- Look for empty frame (value == -1)
+- If empty frame found:
+  - Increment counter
+  - Increment fault count
+  - Place page in empty frame
+  - Record access time
+  - Set flag2 = 1
+  - Break out of loop
+
+Line 60-66: Handle page replacement (flag2 == 0)
+- No empty frames available, must replace
+- Call findLRU() to find victim page
+- Increment counter and faults
+- Replace LRU page with new page
+- Update access time for that frame position
+
+Line 68-72: Display current state of frames
+- Print newline
+- Loop through frames and print each page number
+
+Line 75: printf("\n\nTotal Page Faults = %d", faults);
+- Display total number of page faults at end
+
+Line 77: return 0;
+- Program ends successfully
+
+ALGORITHM SUMMARY:
+==================
+LRU (Least Recently Used) is an optimal page replacement algorithm:
+
+1. Uses timestamp counter to track when each page was last accessed
+2. When page is accessed (hit or loaded), updates its timestamp
+3. When replacement needed, replaces page with oldest timestamp
+4. Better than FCFS because it considers recent usage patterns
+
+KEY CONCEPTS:
+- counter: Global timestamp (increases with each access)
+- time[]: Stores last access timestamp for each frame
+- Page with smallest time[] value is least recently used
+
+EXAMPLE:
+========
+With 3 frames and reference string: 7, 0, 1, 2, 0, 3, 0, 4
+
+Initial: All frames empty [-1, -1, -1]
+Access 7: [7, -1, -1] - Fault (time: [1, 0, 0])
+Access 0: [7, 0, -1] - Fault (time: [1, 2, 0])
+Access 1: [7, 0, 1] - Fault (time: [1, 2, 3])
+Access 2: [2, 0, 1] - Fault, replace 7 (time: [4, 2, 3])
+Access 0: [2, 0, 1] - Hit, update time (time: [4, 5, 3])
+Access 3: [2, 0, 3] - Fault, replace 1 (time: [4, 5, 6])
+Access 0: [2, 0, 3] - Hit (time: [4, 7, 6])
+Access 4: [4, 0, 3] - Fault, replace 2 (time: [8, 7, 6])
+
+Total Page Faults: 6
+
+ADVANTAGES:
+- Performs better than FIFO/FCFS
+- Takes advantage of temporal locality
+- Near optimal performance
+
+DISADVANTAGES:
+- Requires tracking access times
+- More complex implementation
+- Higher overhead than simple algorithms

@@ -1,0 +1,161 @@
+fork2a.c - Process Forking with Array Sorting
+==============================================
+
+LINE-BY-LINE EXPLANATION:
+
+Line 1: #include <unistd.h>
+- Unix standard library for fork(), system calls
+
+Line 2: #include <sys/types.h>
+- Defines data types used in system calls (like pid_t)
+
+Line 3: #include <sys/wait.h>
+- Provides wait() function to wait for child process completion
+
+Line 4: #include <stdio.h>
+- Standard input/output library
+
+Line 5: #include <stdlib.h>
+- Standard library for malloc(), exit() functions
+
+Line 7-8: Function prototypes
+- void asc(int *a, int sz): sorts array in ascending order
+- void dsc(int *a, int sz): sorts array in descending order
+
+Line 10: int main()
+- Main function begins
+
+Line 11: pid_t pid;
+- Variable to store process ID
+- pid_t is special type for process IDs
+
+Line 12: int *a, sz, i;
+- a: pointer for dynamic array
+- sz: size of array
+- i: loop counter
+
+Line 14-15: User input for array size
+- Prompts user to enter size
+- Reads size into sz variable
+
+Line 17: a = (int *)malloc(sz * sizeof(int));
+- Dynamically allocates memory for sz integers
+- malloc returns void*, cast to int*
+
+Line 18-21: Check memory allocation
+- If malloc returns NULL, allocation failed
+- Print error and exit with code 1
+
+Line 23-27: Input array elements
+- Loop through array
+- Prompt for each element with index
+- Read value into array
+
+Line 29: pid = fork();
+- **CRITICAL LINE** - Creates new process
+- fork() returns:
+  - Child process gets pid = 0
+  - Parent process gets pid = child's actual process ID
+  - Returns -1 if fork fails
+
+Line 31-46: switch statement based on pid value
+
+Line 32-34: case -1 (Fork failed)
+- If fork returns -1, error occurred
+- Print error message
+- Exit with -1
+
+Line 36-39: case 0 (Child process code)
+- This code ONLY runs in child process
+- Prints "Child process:"
+- Calls asc() to sort array ascending
+- exit(0) terminates child process
+
+Line 41-45: default (Parent process code)
+- This code ONLY runs in parent process (pid > 0)
+- wait(NULL): Parent waits for child to complete
+- Prints "Parent process:"
+- Calls dsc() to sort array descending
+- exit(0) terminates parent process
+
+Line 48: return 0;
+- Never reached due to exit() calls above
+
+Line 51-67: void asc(int *a, int sz) - Ascending sort function
+- Uses bubble sort algorithm
+
+Line 52: int i, j, temp;
+- Loop variables and temporary storage
+
+Line 53-61: Nested loops for bubble sort
+- Outer loop (i): goes through each position
+- Inner loop (j): compares with remaining elements
+- if (a[i] > a[j]): swap if out of order (ascending)
+- Lines 56-58: Standard swap using temp variable
+
+Line 62-66: Display sorted array
+- Print header "Sorted array in ascending order:"
+- Loop through and print each element with tab
+
+Line 69-86: void dsc(int *a, int sz) - Descending sort function
+- Almost identical to asc()
+- Only difference: Line 73 uses (a[i] < a[j])
+- This puts larger elements first (descending order)
+
+PROCESS FORKING EXPLAINED:
+===========================
+
+1. BEFORE fork():
+   - One process (parent) running
+
+2. AFTER fork():
+   - TWO identical processes running
+   - Same code, same variables, same position
+   - BUT: Different process IDs
+
+3. Process Memory:
+   - Child gets COPY of parent's memory
+   - Arrays are separate copies
+   - Changes in child don't affect parent
+   - Changes in parent don't affect child
+
+4. Execution Flow:
+   Parent                          Child
+   ------                          -----
+   fork() → returns child PID      fork() → returns 0
+   switch(pid > 0)                 switch(pid == 0)
+   goto default                    goto case 0
+   wait() [blocks]                 asc() - sort ascending
+   [waiting...]                    print result
+   [waiting...]                    exit(0) [child dies]
+   [unblocked]
+   dsc() - sort descending
+   print result
+   exit(0) [parent dies]
+
+SYNCHRONIZATION:
+================
+- wait(NULL) in parent ensures child completes first
+- Without wait(), parent might finish before child
+- This ensures predictable output order
+
+EXAMPLE RUN:
+============
+Input: size = 5, array = [5, 2, 8, 1, 9]
+
+Output:
+Child process:
+Sorted array in ascending order:
+1    2    5    8    9
+
+Parent process:
+Sorted array in descending order:
+9    8    5    2    1
+
+IMPORTANT NOTES:
+================
+- This ONLY works on Linux/Unix systems
+- Windows does not have fork() system call
+- Use WSL (Windows Subsystem for Linux) on Windows
+- Child process is complete copy of parent at fork() moment
+- Both processes have independent memory spaces

@@ -63,3 +63,26 @@ sleep(30);
 exit(0);
 }
 
+/*
+ * COMPILATION:
+ * gcc readwrite.c -pthread -o readwrite
+ * 
+ * RUN:
+ * ./readwrite
+ * 
+ * DESCRIPTION:
+ * Reader-Writer problem using pthread mutex
+ * 
+ * CRITICAL BUG:
+ * Line 30 has a bug: "readcount++" should be "readcount--"
+ * This will cause incorrect behavior as readers exit
+ * 
+ * FIX REQUIRED:
+ * Change line 30 from:
+ *     readcount++;
+ * To:
+ *     readcount--;
+ * 
+ * Also note: Line 60 should probably use n2 instead of n1 for writer loop
+ */
+

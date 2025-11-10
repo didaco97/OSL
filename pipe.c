@@ -75,3 +75,22 @@ int main() {
 
     return 0;
 }
+
+/*
+ * COMPILATION:
+ * gcc pipe.c -o pipe
+ * 
+ * RUN:
+ * ./pipe
+ * 
+ * DESCRIPTION:
+ * Full duplex IPC using pipes - parent sends string to child,
+ * child counts characters/words/lines and sends back to parent
+ * 
+ * PLATFORM:
+ * Linux/Unix only - uses pipe() and fork() system calls
+ * Will NOT compile on Windows (needs WSL or Linux)
+ * 
+ * FIXES NEEDED:
+ * None - code should work as-is on Linux
+ */

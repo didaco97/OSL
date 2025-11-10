@@ -1,0 +1,262 @@
+shortest_job_first.c - Shortest Job First (SJF) CPU Scheduling Algorithm
+=========================================================================
+
+LINE-BY-LINE EXPLANATION:
+
+Line 2: #include <stdio.h>
+- Standard input/output library for printf and scanf
+
+Line 3: int main()
+- Main function begins
+
+Line 5: int arrival_time[10], burst_time[10], temp[10];
+- arrival_time[]: stores when each process arrives
+- burst_time[]: stores remaining execution time for each process
+- temp[]: backup of original burst times (for calculations)
+
+Line 6: int i, smallest, count = 0, time, limit;
+- i: loop counter
+- smallest: index of process with shortest burst time
+- count: number of completed processes
+- time: current time unit (CPU clock)
+- limit: total number of processes
+
+Line 7: double wait_time = 0, turnaround_time = 0, end;
+- wait_time: accumulated waiting time for all processes
+- turnaround_time: accumulated turnaround time for all processes
+- end: time when a process completes
+
+Line 8: float average_waiting_time, average_turnaround_time;
+- Variables to store final averages
+
+Line 9-10: Get number of processes
+- Prompt user for total number of processes
+- Store in 'limit' variable
+
+Line 11: printf("Enter details of %d processes\n", limit);
+- Inform user to enter process details
+
+Line 12-19: Input loop for process details
+- Loop through each process (0 to limit-1)
+
+Line 14-15: Get arrival time
+- Prompt: "Enter arrival time for process X"
+- Read into arrival_time[i]
+
+Line 16-17: Get burst time
+- Prompt: "Enter burst time for process X"  
+- Read into burst_time[i]
+
+Line 18: temp[i] = burst_time[i];
+- Save original burst time
+- burst_time[] will be modified during execution
+- temp[] keeps original values for final calculations
+
+Line 20: burst_time[limit] = 9999;
+- Add sentinel value at end of array
+- Used in finding minimum (line 26-27)
+- Ensures valid comparison even when all processes complete
+
+Line 21: for (time = 0; count != limit; time++)
+- **MAIN SCHEDULING LOOP**
+- Runs from time=0 until all processes complete (count == limit)
+- Each iteration represents one time unit
+
+Line 23: smallest = limit;
+- Initialize to sentinel position
+- Will be updated to actual process index
+
+Line 24-31: Find shortest job that has arrived
+- Loop through all processes
+
+Line 26-27: Selection criteria
+  if (arrival_time[i] <= time && 
+      burst_time[i] < burst_time[smallest] && 
+      burst_time[i] > 0)
+  
+  Conditions:
+  1. arrival_time[i] <= time: Process has arrived
+  2. burst_time[i] < burst_time[smallest]: Shorter than current shortest
+  3. burst_time[i] > 0: Process not yet completed
+
+Line 29: smallest = i;
+- Update smallest to current process index
+- This process will execute for this time unit
+
+Line 32: burst_time[smallest]--;
+- Execute selected process for one time unit
+- Decrement its remaining burst time
+- **PREEMPTIVE SJF**: Can switch to shorter job if one arrives
+
+Line 33-39: Check if process just completed
+- if (burst_time[smallest] == 0): Process finished
+
+Line 35: count++;
+- Increment completed process counter
+
+Line 36: end = time + 1;
+- Record completion time
+- time+1 because we're finishing at end of current time unit
+
+Line 37: wait_time += end - arrival_time[smallest] - temp[smallest];
+- Calculate waiting time for this process
+- Formula: Completion_Time - Arrival_Time - Burst_Time
+- Add to total wait_time
+
+Line 38: turnaround_time += end - arrival_time[smallest];
+- Calculate turnaround time for this process
+- Formula: Completion_Time - Arrival_Time
+- Add to total turnaround_time
+
+Line 41-42: Calculate averages
+- average_waiting_time = total wait_time / number of processes
+- average_turnaround_time = total turnaround_time / number of processes
+
+Line 43-44: Display results
+- Print average waiting time
+- Print average turnaround time
+
+Line 45: return 0;
+- Program ends successfully
+
+SJF ALGORITHM EXPLAINED:
+========================
+
+CONCEPT:
+--------
+Shortest Job First (SJF) - Preemptive version (also called SRTF - Shortest Remaining Time First)
+- Always execute the process with shortest remaining burst time
+- If new shorter job arrives, preempt current job
+- Minimizes average waiting time (optimal)
+
+HOW IT WORKS:
+-------------
+At each time unit:
+1. Check which processes have arrived (arrival_time <= current_time)
+2. Among arrived processes, find one with shortest remaining burst time
+3. Execute that process for one time unit
+4. If process completes, calculate its metrics
+5. Move to next time unit
+
+KEY TERMS:
+----------
+1. Arrival Time: When process enters ready queue
+2. Burst Time: Total CPU time needed
+3. Completion Time: When process finishes
+4. Turnaround Time: Completion Time - Arrival Time
+5. Waiting Time: Turnaround Time - Burst Time
+
+FORMULAS:
+---------
+Turnaround Time (TAT) = Completion Time - Arrival Time
+Waiting Time (WT) = Turnaround Time - Burst Time
+                  = (Completion Time - Arrival Time) - Burst Time
+
+EXAMPLE EXECUTION:
+==================
+
+Input:
+Process   Arrival Time   Burst Time
+P1        0             8
+P2        1             4
+P3        2             2
+P4        3             1
+
+Step-by-step execution:
+
+Time 0: P1 arrives, only option → Execute P1, remaining=7
+Time 1: P2 arrives (BT=4), P1 has 7 → Execute P2 (shorter), P2 remaining=3
+Time 2: P3 arrives (BT=2), P2 has 3 → Execute P3 (shorter), P3 remaining=1
+Time 3: P4 arrives (BT=1), P3 has 1 → Both equal, execute P3, P3 remaining=0
+        ✓ P3 completes at time 4
+Time 4: P4 (BT=1), P2 has 3 → Execute P4, P4 remaining=0
+        ✓ P4 completes at time 5
+Time 5: P2 (BT=3), P1 has 7 → Execute P2, P2 remaining=2
+Time 6: Execute P2, P2 remaining=1
+Time 7: Execute P2, P2 remaining=0
+        ✓ P2 completes at time 8
+Time 8-15: Execute P1
+        ✓ P1 completes at time 16
+
+Gantt Chart:
+|P1|P2|P3|P3|P4|P2|P2|P2|P1|P1|P1|P1|P1|P1|P1|P1|
+0  1  2  3  4  5  6  7  8  9  10 11 12 13 14 15 16
+
+Calculations:
+Process   AT   BT   CT   TAT(CT-AT)   WT(TAT-BT)
+P1        0    8    16   16           8
+P2        1    4    8    7            3
+P3        2    2    4    2            0
+P4        3    1    5    2            1
+
+Average Waiting Time = (8+3+0+1)/4 = 3.00
+Average Turnaround Time = (16+7+2+2)/4 = 6.75
+
+CODE TRACE FOR ABOVE EXAMPLE:
+==============================
+
+Initial: arrival_time=[0,1,2,3], burst_time=[8,4,2,1], temp=[8,4,2,1]
+
+Time 0:
+  Check: P1(0<=0, BT=8), P2(1<=0,no), P3(2<=0,no), P4(3<=0,no)
+  smallest=0 (P1), burst_time[0]=7
+
+Time 1:
+  Check: P1(0<=1, BT=7), P2(1<=1, BT=4), P3(2<=1,no), P4(3<=1,no)
+  smallest=1 (P2, 4<7), burst_time[1]=3
+
+Time 2:
+  Check: P1(BT=7), P2(BT=3), P3(2<=2, BT=2), P4(3<=2,no)
+  smallest=2 (P3, 2<3), burst_time[2]=1
+
+Time 3:
+  Check: P1(BT=7), P2(BT=3), P3(BT=1), P4(3<=3, BT=1)
+  smallest=2 (P3, first with BT=1), burst_time[2]=0
+  P3 completes: end=4, wait=4-2-2=0, TAT=4-2=2, count=1
+
+Time 4:
+  Check: P1(BT=7), P2(BT=3), P3(BT=0,skip), P4(BT=1)
+  smallest=3 (P4), burst_time[3]=0
+  P4 completes: end=5, wait=5-3-1=1, TAT=5-3=2, count=2
+
+Time 5-7: Execute P2 for 3 units
+  P2 completes: end=8, wait=8-1-4=3, TAT=8-1=7, count=3
+
+Time 8-15: Execute P1 for 8 units
+  P1 completes: end=16, wait=16-0-8=8, TAT=16-0=16, count=4
+
+Loop exits (count=4=limit)
+Average WT = 12/4 = 3.00
+Average TAT = 27/4 = 6.75
+
+ADVANTAGES OF SJF:
+==================
+✓ Optimal - Minimizes average waiting time
+✓ Better than FCFS for short jobs
+✓ Reduces waiting time significantly
+
+DISADVANTAGES OF SJF:
+=====================
+✗ Requires knowing burst time in advance (not practical)
+✗ Can cause starvation (long jobs may never execute)
+✗ Cannot be implemented in real systems (CPU burst prediction needed)
+
+PREEMPTIVE vs NON-PREEMPTIVE:
+==============================
+
+This code implements: PREEMPTIVE SJF (SRTF)
+- Can interrupt running process if shorter job arrives
+- Rechecks every time unit
+
+NON-PREEMPTIVE SJF:
+- Once process starts, runs to completion
+- Only checks at process completion
+
+COMPLEXITY:
+===========
+Time Complexity: O(n × max_time)
+- n processes
+- max_time depends on burst times and arrival times
+
+Space Complexity: O(n)
+- Arrays for arrival times, burst times, temp

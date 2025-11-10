@@ -52,3 +52,17 @@ int main()
     printf("\nTotal Page Faults:\t%d\n", pageFaults);
     return 0;
 }
+
+/*
+ * COMPILATION:
+ * gcc FCFS.c -o FCFS
+ * 
+ * RUN:
+ * ./FCFS
+ * 
+ * DESCRIPTION:
+ * First Come First Serve (FCFS) page replacement algorithm
+ * 
+ * FIXES NEEDED:
+ * None - code should work as-is
+ */

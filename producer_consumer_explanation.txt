@@ -1,0 +1,258 @@
+producer_consumer.c - Producer-Consumer Problem Simulation
+============================================================
+
+LINE-BY-LINE EXPLANATION:
+
+Line 2-3: Header files
+- stdio.h: Standard I/O (printf, scanf)
+- stdlib.h: exit() function
+
+Line 4: int mutex = 1;
+- Binary semaphore for mutual exclusion
+- 1 = unlocked (available)
+- 0 = locked (in use)
+- Ensures only one process accesses buffer at a time
+
+Line 5: int full = 0;
+- Counting semaphore: number of full slots in buffer
+- Starts at 0 (buffer empty)
+- Producer increments, consumer decrements
+
+Line 6: int empty = 10, x = 0;
+- empty: counting semaphore for empty slots (starts at 10)
+- x: represents the item number being produced/consumed
+
+Line 7-17: void producer() function
+
+Line 9: --mutex;
+- Lock the critical section
+- Decrements mutex from 1 to 0
+- Simulates wait(mutex) or P(mutex) operation
+
+Line 10: ++full;
+- Increment count of full slots
+- Signal that one more item is now available
+
+Line 11: --empty;
+- Decrement count of empty slots
+- One less empty slot available now
+
+Line 12: x++;
+- Produce an item (increment item number)
+
+Line 13-15: printf("\nProducer produces item %d", x);
+- Display which item was produced
+
+Line 16: ++mutex;
+- Unlock the critical section
+- Increments mutex from 0 to 1
+- Simulates signal(mutex) or V(mutex) operation
+
+Line 18-28: void consumer() function
+
+Line 20: --mutex;
+- Lock the critical section (wait/P operation)
+
+Line 21: --full;
+- Decrement count of full slots
+- One less full slot after consumption
+
+Line 22: ++empty;
+- Increment count of empty slots
+- One more empty slot available now
+
+Line 23-25: printf("\nConsumer consumes item %d", x);
+- Display which item was consumed
+
+Line 26: x--;
+- Consume the item (decrement item number)
+
+Line 27: ++mutex;
+- Unlock the critical section (signal/V operation)
+
+Line 29: int main()
+- Main function begins
+
+Line 31: int n, i;
+- n: user's choice (1=producer, 2=consumer, 3=exit)
+- i: loop counter
+
+Line 32-34: Menu display
+- Shows three options to user:
+  1. Press 1 for Producer
+  2. Press 2 for Consumer
+  3. Press 3 for Exit
+
+Line 35: #pragma omp critical
+- OpenMP directive for critical section
+- Ensures thread safety (though not actually creating threads here)
+- Required for compilation with -fopenmp flag
+
+Line 36: for (i = 1; i > 0; i++)
+- Infinite loop (i starts at 1, always > 0)
+- Continues until user chooses exit
+
+Line 37-38: User input
+- Prompt for choice
+- Read user's selection into n
+
+Line 39-61: switch statement on user choice
+
+Line 40-47: case 1 (Producer)
+
+Line 41-42: if ((mutex == 1) && (empty != 0))
+- Check two conditions:
+  1. mutex == 1: Critical section is available
+  2. empty != 0: There's at least one empty slot
+- If both true, safe to produce
+
+Line 43: producer();
+- Call producer function to add item
+
+Line 45-46: else { printf("Buffer is full!"); }
+- If buffer is full (empty == 0), cannot produce
+- Display error message
+
+Line 49-56: case 2 (Consumer)
+
+Line 50-51: if ((mutex == 1) && (full != 0))
+- Check two conditions:
+  1. mutex == 1: Critical section is available
+  2. full != 0: There's at least one full slot
+- If both true, safe to consume
+
+Line 52: consumer();
+- Call consumer function to remove item
+
+Line 54-55: else { printf("Buffer is empty!"); }
+- If buffer is empty (full == 0), cannot consume
+- Display error message
+
+Line 58-60: case 3 (Exit)
+- exit(0): Terminate program successfully
+
+PRODUCER-CONSUMER PROBLEM EXPLAINED:
+=====================================
+
+CONCEPT:
+--------
+Classic synchronization problem with two types of processes:
+1. PRODUCER: Creates items and puts them in a shared buffer
+2. CONSUMER: Takes items from the shared buffer and uses them
+
+SHARED BUFFER:
+-------------
+- Fixed size (10 slots in this program)
+- Multiple producers and consumers access it
+- Need synchronization to prevent conflicts
+
+SYNCHRONIZATION ISSUES TO PREVENT:
+-----------------------------------
+1. Race Condition: Multiple processes accessing buffer simultaneously
+2. Buffer Overflow: Producer adds when buffer is full
+3. Buffer Underflow: Consumer removes when buffer is empty
+
+SOLUTION USING SEMAPHORES:
+--------------------------
+
+1. MUTEX (Binary Semaphore):
+   - Ensures mutual exclusion
+   - Only one process in critical section at a time
+   - Value: 1 (unlocked) or 0 (locked)
+
+2. FULL (Counting Semaphore):
+   - Counts number of full slots
+   - Range: 0 to 10
+   - Consumer waits if full == 0
+
+3. EMPTY (Counting Semaphore):
+   - Counts number of empty slots
+   - Range: 0 to 10
+   - Producer waits if empty == 0
+
+STATE TRANSITIONS:
+------------------
+
+Initial State:
+mutex = 1 (unlocked)
+full = 0 (no items)
+empty = 10 (all slots empty)
+x = 0 (no items produced)
+
+After 1st Producer:
+mutex = 1
+full = 1
+empty = 9
+x = 1
+
+After 1st Consumer:
+mutex = 1
+full = 0
+empty = 10
+x = 0
+
+EXAMPLE EXECUTION:
+==================
+
+Command Sequence: 1, 1, 1, 2, 1, 3
+
+Step 1: Press 1 (Producer)
+- mutex=1, empty=10 → Can produce
+- Output: "Producer produces item 1"
+- State: full=1, empty=9, x=1
+
+Step 2: Press 1 (Producer)
+- mutex=1, empty=9 → Can produce
+- Output: "Producer produces item 2"
+- State: full=2, empty=8, x=2
+
+Step 3: Press 1 (Producer)
+- mutex=1, empty=8 → Can produce
+- Output: "Producer produces item 3"
+- State: full=3, empty=7, x=3
+
+Step 4: Press 2 (Consumer)
+- mutex=1, full=3 → Can consume
+- Output: "Consumer consumes item 3"
+- State: full=2, empty=8, x=2
+
+Step 5: Press 1 (Producer)
+- mutex=1, empty=8 → Can produce
+- Output: "Producer produces item 3"
+- State: full=3, empty=7, x=3
+
+Step 6: Press 3 (Exit)
+- Program terminates
+
+BOUNDARY CONDITIONS:
+====================
+
+Buffer Full (empty=0, full=10):
+- Producer: "Buffer is full!"
+- Consumer: Can consume normally
+
+Buffer Empty (empty=10, full=0):
+- Producer: Can produce normally
+- Consumer: "Buffer is empty!"
+
+LIMITATIONS OF THIS IMPLEMENTATION:
+====================================
+1. Not truly concurrent (uses menu-driven simulation)
+2. mutex is simplified (not real semaphore implementation)
+3. No actual buffer data structure (just counter x)
+4. Single-threaded (not using actual producer/consumer threads)
+
+REAL-WORLD APPLICATIONS:
+=========================
+- Print spooler (printer queue)
+- Network packet buffers
+- Audio/video streaming
+- Multi-threaded applications
+- Message queues
+
+COMPILATION NOTE:
+=================
+Requires OpenMP support:
+gcc producer_consumer.c -fopenmp -o producer_consumer
+
+The -fopenmp flag is needed because of line 35: #pragma omp critical

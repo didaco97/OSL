@@ -84,3 +84,21 @@ void dsc(int *a, int sz) {
     }
     printf("\n");
 }
+
+/*
+ * COMPILATION:
+ * gcc fork2a.c -o fork2a
+ * 
+ * RUN:
+ * ./fork2a
+ * 
+ * DESCRIPTION:
+ * Demonstrates process forking - child sorts ascending, parent sorts descending
+ * 
+ * PLATFORM:
+ * Linux/Unix only - uses fork() and wait() system calls
+ * Will NOT compile on Windows (needs WSL or Linux)
+ * 
+ * FIXES NEEDED:
+ * None - code should work as-is on Linux
+ */

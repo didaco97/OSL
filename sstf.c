@@ -37,3 +37,18 @@ printf("\nTotal head movement: %d\n", total);
 return 0;
 }
 
+/*
+ * COMPILATION:
+ * gcc sstf.c -o sstf
+ * 
+ * RUN:
+ * ./sstf
+ * 
+ * DESCRIPTION:
+ * SSTF (Shortest Seek Time First) disk scheduling algorithm
+ * Calculates total head movement for disk scheduling
+ * 
+ * FIXES NEEDED:
+ * None - code should work as-is
+ */
+

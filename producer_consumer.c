@@ -62,3 +62,19 @@ break;
 }
 }
 
+/*
+ * COMPILATION:
+ * gcc producer_consumer.c -fopenmp -o producer_consumer
+ * 
+ * RUN:
+ * ./producer_consumer
+ * 
+ * DESCRIPTION:
+ * Producer-Consumer problem simulation with mutex and semaphores
+ * Buffer size: 10 items
+ * 
+ * FIXES NEEDED:
+ * None - code should work as-is
+ * Note: Requires OpenMP support (compile with -fopenmp flag)
+ */
+

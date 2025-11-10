@@ -1,0 +1,324 @@
+readwrite.c - Reader-Writer Problem using Pthreads
+===================================================
+
+⚠️ WARNING: THIS CODE CONTAINS BUGS! See BUGS section at end.
+
+LINE-BY-LINE EXPLANATION:
+
+Line 2-6: Header files
+- pthread.h: POSIX threads library (pthread functions)
+- stdlib.h: Standard library (exit, rand)
+- stdio.h: Standard I/O (printf, scanf)
+- unistd.h: Unix standard (sleep function)
+- time.h: Time functions (for random seed - not used here)
+
+Line 8: pthread_mutex_t x, wsem;
+- x: Mutex to protect readcount variable
+- wsem: Mutex to ensure mutual exclusion for writers
+- pthread_mutex_t is the data type for mutexes
+
+Line 9: pthread_t tid;
+- Thread identifier (reused for all threads)
+
+Line 10: int readcount;
+- Global counter: number of readers currently reading
+- Protected by mutex 'x'
+
+Line 11-16: void initialize() function
+- Initializes the synchronization primitives
+
+Line 13: pthread_mutex_init(&x, NULL);
+- Initialize mutex 'x' with default attributes
+- Used to protect readcount
+
+Line 14: pthread_mutex_init(&wsem, NULL);
+- Initialize mutex 'wsem' with default attributes  
+- Acts as write semaphore
+
+Line 15: readcount = 0;
+- No readers initially
+
+Line 17-37: void* reader(void* param) function
+- Function executed by each reader thread
+- param: thread parameter (not used here)
+- Returns void* as required by pthread
+
+Line 19-20: Random wait time
+- waittime = rand() % 5: generates 0-4 seconds
+- Simulates variable reading duration
+
+Line 21: printf("\n reader is trying to enter");
+- Reader announces intention to read
+
+Line 22: pthread_mutex_lock(&x);
+- **LOCK MUTEX X**
+- Entering critical section to modify readcount
+- Ensures only one thread modifies readcount at a time
+
+Line 23: readcount++;
+- Increment number of active readers
+
+Line 24-25: if(readcount == 1) pthread_mutex_lock(&wsem);
+- If this is the FIRST reader:
+  - Lock wsem to prevent writers from entering
+  - Subsequent readers don't need to lock wsem again
+  - "Readers preference" - first reader blocks writers
+
+Line 26: printf("\n %d reader is inside", readcount);
+- Display current number of readers
+
+Line 27: pthread_mutex_unlock(&x);
+- **UNLOCK MUTEX X**
+- Release readcount protection
+- Other readers can now enter
+
+Line 28: sleep(waittime);
+- Simulate reading for waittime seconds
+- During this time, thread is OUTSIDE critical section
+- Multiple readers can read simultaneously
+
+Line 29: pthread_mutex_lock(&x);
+- **LOCK MUTEX X AGAIN**
+- About to modify readcount (exiting)
+
+Line 30: readcount++;
+- ❌ **BUG HERE!** Should be readcount--
+- Incorrectly increments instead of decrements
+
+Line 31-35: Check if last reader
+- if(readcount == 0): supposed to check if last reader leaving
+- But due to bug on line 30, this will never be true
+- Should unlock wsem when last reader leaves
+- Should unlock x before printing
+
+Line 36: Missing return statement and closing brace
+
+Line 38-50: void* writer(void* param) function
+- Function executed by each writer thread
+
+Line 40-41: Random wait time
+- waittime = rand() % 3: generates 0-2 seconds
+- Simulates variable writing duration
+
+Line 42: printf("\n writer is trying to enter");
+- Writer announces intention to write
+
+Line 43: pthread_mutex_lock(&wsem);
+- **LOCK WSEM**
+- Writer must acquire write lock
+- Blocked if any readers are active (first reader locked wsem)
+- Ensures exclusive access for writing
+
+Line 44: printf("\n Writer has entered");
+- Confirmation that writer has exclusive access
+
+Line 45: sleep(waittime);
+- Simulate writing for waittime seconds
+- Only one writer can be here at a time
+
+Line 46: pthread_mutex_unlock(&wsem);
+- **UNLOCK WSEM**
+- Release write lock
+- Allow readers or other writers to proceed
+
+Line 47: printf("\n writer is leaving");
+- Writer announces completion
+
+Line 48: sleep(30);
+- Sleep 30 seconds (allows observation)
+
+Line 49: exit(0);
+- Terminate entire process (not just thread)
+- ⚠️ This will kill all threads
+
+Line 51: int main()
+- Main function
+
+Line 53: int n1, n2, i;
+- n1: number of reader threads
+- n2: number of writer threads  
+- i: loop counter
+
+Line 54-57: Get user input
+- Read number of readers
+- Read number of writers
+
+Line 58-59: Create reader threads
+- Loop n1 times
+- pthread_create(&tid, NULL, reader, NULL):
+  - &tid: address to store thread ID (overwrites each time!)
+  - NULL: default thread attributes
+  - reader: function to execute
+  - NULL: no parameters passed
+
+Line 60-61: Create writer threads
+- Loop should use n2, but uses n1 (likely a bug)
+- Creates n1 writer threads instead of n2
+
+Line 62: sleep(30);
+- Main thread sleeps 30 seconds
+- Allows created threads to execute
+
+Line 63: exit(0);
+- Terminate program
+
+READER-WRITER PROBLEM EXPLAINED:
+=================================
+
+PROBLEM STATEMENT:
+------------------
+Shared database accessed by:
+1. READERS: Only read data (multiple readers can read simultaneously)
+2. WRITERS: Modify data (must have exclusive access)
+
+CONSTRAINTS:
+------------
+1. Multiple readers can read at the same time
+2. Only ONE writer can write at a time
+3. Writers must have EXCLUSIVE access (no readers or writers)
+4. No reader can read while writer is writing
+
+SYNCHRONIZATION REQUIREMENTS:
+------------------------------
+- Mutex 'x': Protects readcount variable
+- Mutex 'wsem': Provides exclusive access for writers
+- readcount: Tracks number of active readers
+
+SOLUTION LOGIC (Readers Preference):
+-------------------------------------
+
+READER BEHAVIOR:
+1. Lock x
+2. Increment readcount
+3. If first reader (readcount==1): Lock wsem (block writers)
+4. Unlock x
+5. READ (multiple readers can be here)
+6. Lock x
+7. Decrement readcount
+8. If last reader (readcount==0): Unlock wsem (allow writers)
+9. Unlock x
+
+WRITER BEHAVIOR:
+1. Lock wsem (wait if readers present)
+2. WRITE (exclusive access)
+3. Unlock wsem
+
+WHY IT WORKS:
+-------------
+- First reader locks wsem → blocks all writers
+- Subsequent readers bypass wsem (already locked)
+- Last reader unlocks wsem → allows writers
+- Writers always need wsem → guaranteed exclusion
+
+EXECUTION EXAMPLE (Without Bugs):
+==================================
+
+Time    Event                   readcount   x       wsem
+----    -----                   ---------   ---     ----
+0       Initial                 0           Free    Free
+1       Reader1 enters          1           Free    Locked(R1)
+2       Reader2 enters          2           Free    Locked(R1)
+3       Writer1 tries          2           Free    Blocked
+4       Reader1 exits          1           Free    Locked(R1)
+5       Reader2 exits          0           Free    Free
+6       Writer1 enters         0           Free    Locked(W1)
+7       Reader3 tries          0           Blocked Free
+8       Writer1 exits          0           Free    Free
+9       Reader3 enters         1           Free    Locked(R3)
+
+BUGS IN THIS CODE:
+==================
+
+❌ BUG #1 (CRITICAL): Line 30
+--------------------------
+Line 30: readcount++;
+Should be: readcount--;
+
+Impact:
+- Readers never decrement readcount when exiting
+- readcount keeps increasing forever
+- Condition readcount==0 never becomes true
+- wsem never gets unlocked by readers
+- Writers will be blocked forever after first reader
+
+❌ BUG #2 (MINOR): Line 60
+--------------------------
+Line 60: for(i=0; i<n1; i++)
+Should be: for(i=0; i<n2; i++)
+
+Impact:
+- Creates n1 writer threads instead of n2
+- User input for n2 is ignored
+
+❌ BUG #3 (LOGIC): Line 58-61
+-----------------------------
+Thread ID variable 'tid' is reused for all threads
+
+Impact:
+- Each pthread_create overwrites tid
+- Cannot individually manage threads
+- Not a fatal bug but poor practice
+
+❌ BUG #4 (LOGIC): Missing return in reader
+-------------------------------------------
+Line 36: Missing proper closing and return
+
+Should have:
+  return NULL;
+}
+
+CORRECTED READER FUNCTION:
+===========================
+
+void* reader(void* param)
+{
+    int waittime;
+    waittime = rand() % 5;
+    printf("\n reader is trying to enter");
+    pthread_mutex_lock(&x);
+    readcount++;
+    if(readcount == 1)
+        pthread_mutex_lock(&wsem);
+    printf("\n %d reader is inside", readcount);
+    pthread_mutex_unlock(&x);
+    sleep(waittime);
+    pthread_mutex_lock(&x);
+    readcount--;  // FIX: Changed from readcount++
+    if(readcount == 0)
+    {
+        pthread_mutex_unlock(&wsem);
+    }
+    pthread_mutex_unlock(&x);
+    printf("\n reader is leaving");
+    return NULL;  // FIX: Added return statement
+}
+
+CORRECTED MAIN FUNCTION:
+=========================
+
+for(i=0; i<n1; i++)
+    pthread_create(&tid, NULL, reader, NULL);
+for(i=0; i<n2; i++)  // FIX: Changed from n1 to n2
+    pthread_create(&tid, NULL, writer, NULL);
+
+COMPILATION:
+============
+gcc readwrite.c -pthread -o readwrite
+
+The -pthread flag:
+- Links pthread library
+- Enables thread-safe compilation
+- Required for pthread functions
+
+READERS VS WRITERS PREFERENCE:
+===============================
+
+This implementation: READERS PREFERENCE
+- Readers can "starve" writers
+- If readers keep arriving, writers may wait forever
+
+Alternative: WRITERS PREFERENCE
+- Writers get priority
+- Can starve readers instead
+
+Fair solution: Use condition variables or semaphores with queuing

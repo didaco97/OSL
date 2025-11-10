@@ -44,3 +44,18 @@ printf(" \n Average waiting time: % 2f", average_waiting_time);
 printf("\n Average turnaround time: % 2f \n", average_turnaround_time);
 return 0;
 }
+
+/*
+ * COMPILATION:
+ * gcc shortest_job_first.c -o shortest_job_first
+ * 
+ * RUN:
+ * ./shortest_job_first
+ * 
+ * DESCRIPTION:
+ * Shortest Job First (SJF) CPU scheduling algorithm - preemptive
+ * Calculates average waiting time and turnaround time
+ * 
+ * FIXES NEEDED:
+ * None - code should work as-is
+ */
