@@ -36,6 +36,7 @@ printf("\n1. Press 1 for Producer"
 for (i = 1; i > 0; i++) {
 printf("\nEnter your choice:");
 scanf("%d", &n);
+// Input: Enter 1 (produce), 2 (consume), or 3 (exit)
 switch (n) {
 case 1:
 if ((mutex == 1)
@@ -76,5 +77,21 @@ break;
  * FIXES NEEDED:
  * None - code should work as-is
  * Note: Requires OpenMP support (compile with -fopenmp flag)
+ * 
+ * EXPECTED OUTPUT:
+ * 1. Press 1 for Producer
+ * 2. Press 2 for Consumer
+ * 3. Press 3 for Exit
+ * Enter your choice:1
+ * Producer produces item 1
+ * Enter your choice:1
+ * Producer produces item 2
+ * Enter your choice:1
+ * Producer produces item 3
+ * Enter your choice:2
+ * Consumer consumes item 3
+ * Enter your choice:2
+ * Consumer consumes item 2
+ * Enter your choice:3
  */
 

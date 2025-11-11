@@ -53,8 +53,10 @@ int main()
 int n1,n2,i;
 printf("\n Enter the number of readers:");
 scanf("%d",&n1);
+// Input: Enter number of reader threads (e.g., 3)
 printf("\n enter the number of writer");
 scanf("%d",&n2);
+// Input: Enter number of writer threads (e.g., 2)
 for(i=0;i<n1;i++)
 pthread_create(&tid,NULL,reader,NULL);
 for(i=0;i<n1;i++)
@@ -84,5 +86,21 @@ exit(0);
  *     readcount--;
  * 
  * Also note: Line 60 should probably use n2 instead of n1 for writer loop
+ * 
+ * EXPECTED OUTPUT:
+ * Enter the number of readers:3
+ * enter the number of writer2
+ * 
+ * reader is trying to enter
+ * 1 reader is inside
+ * reader is trying to enter
+ * 2 reader is inside
+ * reader is trying to enter
+ * 3 reader is inside
+ * writer is trying to enter
+ * writer is trying to enter
+ * Writer has entered
+ * writer is leaving
+ * writer is leaving
  */
 

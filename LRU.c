@@ -18,12 +18,14 @@ int main()
     int no_of_frames, no_of_pages, frames[10], pages[30], counter = 0, time[10], flag1, flag2, i, j, pos, faults = 0;
 	printf("Enter number of frames: ");
 	scanf("%d", &no_of_frames);
+	// Input: Enter number of frames (e.g., 3)
 	
 	printf("Enter number of pages: ");
 	scanf("%d", &no_of_pages);
+	// Input: Enter number of page references (e.g., 10)
 	
 	printf("Enter reference string: ");
-	
+	// Input: Enter page numbers separated by spaces (e.g., 7 0 1 2 0 3 0 4 2 3)
     for(i = 0; i < no_of_pages; ++i){
     	scanf("%d", &pages[i]);
     }
@@ -90,4 +92,22 @@ int main()
  * 
  * FIXES NEEDED:
  * None - code should work as-is
+ * 
+ * EXPECTED OUTPUT:
+ * Enter number of frames: 3
+ * Enter number of pages: 10
+ * Enter reference string: 7 0 1 2 0 3 0 4 2 3
+ * 
+ * 7    -1    -1
+ * 7    0     -1
+ * 7    0     1
+ * 2    0     1
+ * 2    0     1
+ * 2    0     3
+ * 2    0     3
+ * 4    0     3
+ * 4    0     2
+ * 4    3     2
+ * 
+ * Total Page Faults = 8
  */

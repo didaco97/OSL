@@ -6,11 +6,14 @@ int n, i, j, head, total = 0;
 int requests[100], visited[100] = {0};
 printf("Enter number of disk requests: ");
 scanf("%d", &n);
+// Input: Enter number of disk requests (e.g., 8)
 printf("Enter disk requests: ");
+// Input: Enter disk request positions separated by spaces (e.g., 98 183 37 122 14 124 65 67)
 for (i = 0; i < n; i++)
 scanf("%d", &requests[i]);
 printf("Enter initial head position: ");
 scanf("%d", &head);
+// Input: Enter initial disk head position (e.g., 53)
 printf("\nSSTF Disk Scheduling:\n");
 printf("Sequence: %d", head);
 int count = 0;
@@ -50,5 +53,14 @@ return 0;
  * 
  * FIXES NEEDED:
  * None - code should work as-is
+ * 
+ * EXPECTED OUTPUT:
+ * Enter number of disk requests: 8
+ * Enter disk requests: 98 183 37 122 14 124 65 67
+ * Enter initial head position: 53
+ * 
+ * SSTF Disk Scheduling:
+ * Sequence: 53 -> 65 -> 67 -> 37 -> 14 -> 98 -> 122 -> 124 -> 183
+ * Total head movement: 236
  */
 

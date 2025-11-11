@@ -61,6 +61,7 @@ int main() {
 
         printf("Enter a string (or sentence): ");
         fgets(writeMsg, sizeof(writeMsg), stdin);
+        // Input: Enter any text (e.g., "Hello world from parent process")
         writeMsg[strcspn(writeMsg, "\n")] = '\0'; // remove newline
 
         write(fd1[1], writeMsg, strlen(writeMsg) + 1);
@@ -93,4 +94,12 @@ int main() {
  * 
  * FIXES NEEDED:
  * None - code should work as-is on Linux
+ * 
+ * EXPECTED OUTPUT:
+ * Enter a string (or sentence): Hello world from parent process
+ * [Parent] Sent message to Child.
+ * 
+ * [Child] Received from Parent: Hello world from parent process
+ * [Child] Sent analysis back to Parent.
+ * [Parent] Received from Child: Characters: 33, Words: 5, Lines: 0
  */
